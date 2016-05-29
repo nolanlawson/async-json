@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-  <title>Test async json</title>
+  <title>Test async JSON parsing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     html, body {
@@ -10,7 +10,11 @@
     }
 
     p {
-      font-size: 16px;
+      font-size: 18px;
+    }
+
+    img {
+      margin: 20px;
     }
 
     body {
@@ -20,11 +24,12 @@
     }
     button {
       font-size: 20px;
-      padding: 5px;
+      padding: 10px;
+      margin: 10px;
     }
   </style>
 <body>
-<h1>Test async json</h1>
+<h1>Test async JSON parsing</h1>
 <p>
   This page allows you to test the DOM-blocking effects of synchronous JSON
   parsing versus asynchronous JSON parsing using the `fetch()` API, as described
@@ -32,8 +37,8 @@
 </p>
 <img src="kirby.gif"/>
 <div style="margin-top: 20px;">
-  <button type=button onclick="doSyncJsonParse()">Do sync JSON parse</button>
-  <button type=button onclick="doAsyncJsonParse()">Do async JSON parse</button>
+  <button type=button id=button1>Do sync JSON parse</button>
+  <button type=button id=button2>Do async JSON parse</button>
 </div>
 <div style="margin-top: 20px;">
   <pre id=display></pre>
@@ -41,36 +46,46 @@
 
 <script src="zepto.js"></script>
 <script>
+(function () {
+
+var jsonString;
+
 function doSyncJsonParse() {
   var start = performance.now();
-  $.ajax({
-    url: 'huge.json?q' + Math.random(),
-    dataType: 'text',
-    success: function (json) {
-      var parsed = JSON.parse(json);
-      var time = performance.now() - start;
-      document.getElementById('display').innerHTML += '\nfetched json, size was ' +
-        json.length + '; number of keys was ' + Object.keys(parsed).length +
-        '; time taken was ' + time + 'ms';
-    }
-  });
+  var parsed = JSON.parse(jsonString);
+  var time = Math.round(performance.now() - start);
+  document.getElementById('display').innerHTML += '\nSYNC:  Parsed json, size was ' +
+    jsonString.length + '; time taken was ' + time + 'ms';
 }
 
 function doAsyncJsonParse() {
-  if (typeof fetch !== 'function') {
+  if (typeof Response !== 'function') {
     document.getElementById('display').innerHTML += '\nthis browser does not have fetch()';
     return;
   }
   var start = performance.now();
-  fetch('huge.json?q' + Math.random()).then(function (resp) {
-    return resp.json().then(function (json) {
-      var time = performance.now() - start;
-      document.getElementById('display').innerHTML += '\nfetched json, size was ' +
-        resp.headers.get('content-length') + '; number of keys was ' +
-        Object.keys(json).length + '; time taken was ' + time + 'ms';
-    });
+  new Response(jsonString).json().then(function (json) {
+    var time = Math.round(performance.now() - start);
+    document.getElementById('display').innerHTML += '\nASYNC: Parsed json, size was ' +
+      jsonString.length + '; time taken was ' + time + 'ms';
   });
 }
+
+$.ajax({
+  url: 'huge.json',
+  dataType: 'text',
+  success: function (json) {
+    jsonString = json;
+  },
+  error: function () {
+    document.getElementById('display').innerHTML += '\nError fetching JSON object';
+  }
+});
+
+document.getElementById('button1').addEventListener('click', doSyncJsonParse);
+document.getElementById('button2').addEventListener('click', doAsyncJsonParse);
+
+})();
 </script>
 </body>
 </html>
