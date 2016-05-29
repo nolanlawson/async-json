@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <title>Test async json</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    html, body {
+      text-color: #333;
+      background: #fafafa;
+      font-family: Helvetica, Arial, sans-serif;
+    }
+
+    p {
+      font-size: 16px;
+    }
+
+    body {
+      max-width: 600px;
+      padding: 20px;
+      margin: 0 auto;
+    }
+    button {
+      font-size: 20px;
+      padding: 5px;
+    }
+  </style>
+<body>
+<h1>Test async json</h1>
+<p>
+  This page allows you to test the DOM-blocking effects of synchronous JSON
+  parsing versus asynchronous JSON parsing using the `fetch()` API, as described
+  in <a href="http://azimi.me/2015/07/30/non-blocking-async-json-parse.html">this blog post</a>.
+</p>
+<img src="kirby.gif"/>
+<div style="margin-top: 20px;">
+  <button type=button onclick="doSyncJsonParse()">Do sync JSON parse</button>
+  <button type=button onclick="doAsyncJsonParse()">Do async JSON parse</button>
+</div>
+<div style="margin-top: 20px;">
+  <pre id=display></pre>
+</div>
+
+<script src="zepto.js"></script>
+<script>
+function doSyncJsonParse() {
+  var start = performance.now();
+  $.ajax({
+    url: 'huge.json?q' + Math.random(),
+    dataType: 'text',
+    success: function (json) {
+      var parsed = JSON.parse(json);
+      var time = performance.now() - start;
+      document.getElementById('display').innerHTML += '\nfetched json, size was ' +
+        json.length + '; number of keys was ' + Object.keys(parsed).length +
+        '; time taken was ' + time + 'ms';
+    }
+  });
+}
+
+function doAsyncJsonParse() {
+  if (typeof fetch !== 'function') {
+    document.getElementById('display').innerHTML += '\nthis browser does not have fetch()';
+    return;
+  }
+  var start = performance.now();
+  fetch('huge.json?q' + Math.random()).then(function (resp) {
+    return resp.json().then(function (json) {
+      var time = performance.now() - start;
+      document.getElementById('display').innerHTML += '\nfetched json, size was ' +
+        resp.headers.get('content-length') + '; number of keys was ' +
+        Object.keys(json).length + '; time taken was ' + time + 'ms';
+    });
+  });
+}
+</script>
+</body>
+</html>
