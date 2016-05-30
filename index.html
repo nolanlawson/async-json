@@ -43,6 +43,9 @@
 <div style="margin-top: 20px;">
   <pre id=display></pre>
 </div>
+<div class="downloading">
+<em>Loading JSON file, please wait...</em>
+</div>
 
 <script src="zepto.js"></script>
 <script>
@@ -79,6 +82,7 @@ $.ajax({
     Array.from(document.querySelectorAll('button')).forEach(function (button) {
       button.disabled = false;
     });
+    document.querySelector('.downloading').style.display = 'none';
   },
   error: function () {
     document.getElementById('display').innerHTML += '\nError fetching JSON object';
