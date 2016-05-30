@@ -37,8 +37,8 @@
 </p>
 <img src="kirby.gif"/>
 <div style="margin-top: 20px;">
-  <button type=button id=button1>Do sync JSON parse</button>
-  <button type=button id=button2>Do async JSON parse</button>
+  <button type=button id=button1 disabled>Do sync JSON parse</button>
+  <button type=button id=button2 disabled>Do async JSON parse</button>
 </div>
 <div style="margin-top: 20px;">
   <pre id=display></pre>
@@ -76,6 +76,9 @@ $.ajax({
   dataType: 'text',
   success: function (json) {
     jsonString = json;
+    Array.from(document.querySelectorAll('button')).forEach(function (button) {
+      button.disabled = false;
+    });
   },
   error: function () {
     document.getElementById('display').innerHTML += '\nError fetching JSON object';
